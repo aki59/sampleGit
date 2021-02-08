@@ -1,0 +1,3 @@
+mkdir analysis
+cp ../target/*.jar x.jar && jar -xf x.jar
+jdeps --ignore-missing-deps --print-module-deps --multi-release=14 --recursive -cp BOOT-INF/lib/* x.jar|grep -v Warning:
