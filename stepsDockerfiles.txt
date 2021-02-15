@@ -1,0 +1,27 @@
+Optimal strategy
+Now that we have the background sorted, let’s work out what needs to be done:
+
+Write your code and build the far JAR as usual
+Use jdeps to analyse what modules your app requires
+Build a two-stage Dockerfile
+In Stage 1:
+
+Use the standard JDK base image
+Run jlink to build an optimised JVM
+Unpack the far JAR
+Organise the unpacked artifacts between dependencies and app code
+In Stage 2:
+
+Use a tiny base image
+Move the optimised JVM over
+Move the unpacked dependencies over
+Move the app code over
+Launch your main class using the optimised JVM
+
+After building your fat JAR, unpack it and run jdeps on recursive mode against the dependencies and the JAR itself. Some dependencies like log4j-api are multi-release so you might need to specify a release number based on your JDK. We’re using 14 here
+
+Using the same JDK base image for stage 1, we run jlink, feeding in the modules list from the previous step and specifying an output directory in /jvm.
+
+As you’ve noticed,jdeps is not fool-proof. I’ve experienced a couple of scenarios where the build process succeeds, only to fail at runtime due to a missing module. Hence, you will need to test your app end-to-end to ensure that your optimised image is complete. These are some common modules to add if your app does the following:
+
+jdk.crypto.ec: If your app calls third-party REST APIs (that might use elliptic curve cryptography in their TLS certificates)
